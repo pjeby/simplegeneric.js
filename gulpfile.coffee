@@ -18,7 +18,9 @@ gulp.task 'test', ['build'], ->
         reporter: "spec"
         #compilers: "litcoffee:coffee-script/register"
         #require: "should"
-    .on "error", (err) -> @emit 'end'
+    .on "error", (err) ->
+        console.log err
+        @emit 'end'
 
 gulp.task 'default', ['test'], ->
     gulp.watch ['*.litcoffee'], ['test']
