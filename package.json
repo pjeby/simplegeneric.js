@@ -1,0 +1,25 @@
+{
+  "name": "simplegeneric",
+  "version": "0.0.0",
+  "description": "Single-dispatch generic functions, ala Python's simplegeneric and functools.singledispatch",
+  "main": "simplegeneric.js",
+  "scripts": {
+    "test": "coffeegulp test",
+    "prepublish": "coffee -c simplegeneric.litcoffee"
+  },
+  "keywords": [
+    "generic functions",
+    "single-dispatch"
+  ],
+  "author": "PJ Eby <pje@telecommunity.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "should": "^3.3.1",
+    "mocha": "^1.18.2",
+    "coffeegulp": "0.0.4",
+    "coffee-script": "^1.7.1",
+    "gulp-mocha": "^0.4.1",
+    "gulp-coffee": "^1.4.2",
+    "gulp": "^3.6.2"
+  }
+}
