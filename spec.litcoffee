@@ -18,7 +18,7 @@
             for argn in [null, 0, 1, 2, 3]
                 simplegeneric("my.unique.id", argn).should.be.Function
                 .and.have.property('argn').and.equal(argn ? 0)
-            
+
         it "accepts a default implementation (defaulting argn to 0)", ->
             for fn in [(->42), (->77)]
                 gf = simplegeneric("some.id", fn)
@@ -35,8 +35,8 @@
 
         describe "does argument validation", ->
             it "requires a string first"
+            it "requires a non-negative, numeric argument position"
             it "only accepts an optional number and optional function"
-
 
 
     describe "A generic function", ->
@@ -123,28 +123,69 @@
 
         describe "invokes methods appropriately", ->
 
-            it "passes through its arguments"
-        
-            it "dispatches based on its argument position"
+            checkByBase = (fn) ->
+                fn(new Base).should.equal "base"
+                fn(new Subclass).should.equal "base"
+                fn(String).should.be.false
+                fn(RegExp).should.be.false
+                fn("x").should.be.true
+                fn(/x/).should.be.true
 
-            it "shares methods from gfs with the same key"
+            checkByObject = (fn) ->
+                fn(ob1).should.equal "ob1"
+                fn(ob2).should.be.false
+                fn(42).should.be.false
+                
+            it "dispatches correctly by type", ->
+                checkByBase example
+
+            it "dispatches correctly by object", ->
+                checkByObject example
+
+            it "passes through its arguments and context", ->
+                thing = gf: simplegeneric "context.check", ->
+                    [this, [].slice.call(arguments)]
+                thing.gf(1, 2, 3).should.eql([thing, [1,2,3]])
+                thing.gf.when_object thing, ->
+                    [].slice.call(arguments).concat this
+                thing.gf(thing, 4, 5).should.eql([thing,4,5,thing])
+                
+            it "shares methods from gfs with the same key", ->
+                checkByBase fn = simplegeneric(KEY, example.default_method)
+                checkByObject fn
+
+
+
+
+
+
+
+
 
             it "doesn't share mathods from gfs with different keys"
 
-            it "dispatches correctly by type", ->
-                example(new Base).should.equal "base"
-                example(new Subclass).should.equal "base"
-                example(String).should.be.false
-                example(RegExp).should.be.false
-                example("x").should.be.true
-                example(/x/).should.be.true
+            it "dispatches based on its argument position", ->
+                for argn in [0..9]
+                    gf = simplegeneric(KEY, argn, example.default_method)
+                    checkByBase fn = (arg) ->
+                        args = []
+                        args[argn] = arg
+                        gf(args...)
+                    checkByObject fn
 
-            it "dispatches correctly by object", ->
-                example(ob1).should.equal "ob1"
-                example(ob2).should.be.false
-                example(42).should.be.false
 
         it "doesn't expose its private properties"
+        it "doesn't allow changing its informational properties"
+
+
+
+
+
+
+
+
+
+
 
 
 

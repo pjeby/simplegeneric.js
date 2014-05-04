@@ -4,7 +4,7 @@
         if typeof argn is "function"
             default_method = argn
             argn = 0
-        fn = -> (arguments[0]?[key] ? default_method)()
+        fn = -> (arguments[argn]?[key] ? default_method).apply(this, arguments)
         fn.key = key
         fn.argn = argn
         fn.default_method = default_method
@@ -13,7 +13,7 @@
             if arguments.length<2
                 throw new TypeError "At least two arguments required"
             if typeof method isnt "function"
-                throw new TypeError "Last argument must be function"               
+                throw new TypeError "Last argument must be function"         
             for t in targets
                 t[key] = method
 

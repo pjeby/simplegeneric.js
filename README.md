@@ -61,7 +61,9 @@ pprint(Object.create(null), fidget, widget)         // calls default code
 
 A generic function is an *extensible* function.  It replaces code that would otherwise be written as a large ``switch`` or series of ``if()`` statements, or as a bunch of methods spread out over a wide variety of classes (or prototypes in the case of JavaScript), and makes it possible for any module to define operations for certain types, without needing to modify the code of either the types or the original operation.
 
-Instead, new types can register methods for existing operations, new operations can register methods for existing types, and application code can register methods to add support for the third-party types it uses, to a third-party operation it uses. 
+Instead, new types can register methods for existing operations, new operations can register methods for existing types, and application code can register methods to add support for the third-party types it uses, to a third-party operation it uses.
+
+This lets you follow the [open/closed principle](http://en.wikipedia.org/wiki/Open/closed_principle) of software development: code should be open to extension, while being closed to modification.  A generic function can be extended at any time to add new types, without needing to modify its code.  And any type can be extended to support new generic functions, without needing to modify *its* code, either.  
 
 
 ### What good is that?
@@ -73,13 +75,11 @@ Generic functions are especially useful when a library wants to offer a generall
 In general, single-dispatch generic functions like the ones simplegeneric provides are also [a great replacement for the Visitor Pattern](http://peak.telecommunity.com/DevCenter/VisitorRevisited).
 
 
-### Why not use a convention for method names instead, then?
+### Why not use a convention for method names instead?
 
-That's actually what simplegeneric does, internally: the globally unique name (which could include an email address, URL, GUID, or other globally unique identifier) is used as a method name, and registered methods are attached to the right objects as non-enumerable properties.  (Unless you're running in a pre-ES5 environment; see [Compatibility](#compatibility), below.)
+That's actually what simplegeneric does, internally: the globally unique name (which should include an email address, URL, GUID, or other substring guaranteed to be unique) is used as a method name, and registered methods are attached to the right objects as non-enumerable properties.  (Unless you're running in a pre-ES5 environment; see [Compatibility](#compatibility), below.)
 
-The main benefit of having simplegeneric do this instead of doing it directly is that your codebase stays DRY, *and* easy-to-read.
-
-Instead of copying your unique name everywhere, or continually defining non-enumerable properties, your code *says what it does*: it registers what e.g. ``pprint`` will do when given an object of a given type.
+The main benefit of having simplegeneric do this instead of doing it directly is that your codebase stays DRY, *and* easy-to-read.  Instead of copying your unique name everywhere, or continually defining non-enumerable properties, your code just *says what it does*: it registers what e.g. ``pprint`` will do when given an object of a given type.
 
 
 ### But doesn't that mean depending on the module that exports the generic function, even in code that doesn't *call* it?
@@ -88,9 +88,9 @@ That's where the unique name comes in.  If you want to write a module that suppo
 
 This lets you avoid pulling in the operation as a dependency, when you just want to support the operation on your types.
 
-### But how will I know the unique name?
+### But how will I know the unique name the other author used?
 
-People writing libraries that want to support interop like this, should document the name they're using with their exported generic functions, and should change the name if the signature or requirements change, e.g. ``my.whatever.op:v1`` and ``my.whatever.op:v2``.
+People writing libraries that want to support interop like this, should document the name they're using with their exported generic functions, and should change the name if the signature or requirements change, e.g. ``my.whatever.someOp:v1`` and ``my.whatever.someOp:v2``.
 
 (In a pinch, you can also get the name from the ``.key`` property of the generic function, but if the author didn't document it, they may not intend for you to depend on it.  Check with them to be sure it'll stay supported!) 
  
@@ -98,9 +98,27 @@ People writing libraries that want to support interop like this, should document
 
 Functions created with this library should work correctly in any browser or JS engine, even back to IE 6.
 
-On non-ES5 browsers (e.g. IE 8 and lower), however, registered methods will be enumerable, so you should avoid registering methods on individual objects with the ``.when_object()`` API, unless you know for sure that the enumerability will not be a problem.
+On non-ES5 platforms (e.g. IE 8 and lower), however, registered methods will be enumerable, so you should avoid registering methods on individual objects with the ``.when_object()`` API, unless you know for sure that the enumerability will not be a problem.
 
 This should usually not be an issue for methods registered with ``.when_type()``, since most code that enumerates object contents expects to use ``.hasOwnProperty()`` to filter out inherited methods.  But ``.when_object()`` will register methods directly on an instance, which can't be filtered out unless the properties are defined non-enumerable.
 
-Using ``.when_object()`` on objects used only as prototypes should be safe, however, and all of these issues are moot if you are only targeting ES5 environments like Node and IE 9+.  
+(Using ``.when_object()`` on objects used only as prototypes should be safe, however, and all of these issues are moot if you are only targeting ES5 environments like Node, most non-IE browsers, and IE 9+.)
 
+## Todo/Open Issues
+
+* What does it really mean to be a "type" vs. prototype?
+    * e.g. should objects that are already prototypes be accepted?
+    * for ``method_for_type()`` as well as ``when_type()``? 
+* Redo docs to be less confrontational
+* Refactor/document inspection methods
+    * ``method_for(ob, exact=no)``
+    * ``method_for_type(type, exact=no)``
+* Should repeat registrations be an error?
+* Implement functionality of remaining tests:
+    * key validation
+    * extra args validation
+    * argument+this passthrough
+    * argn > 0
+    * non-enumerable props
+* Make key/argn/default_method non-writable, non-configurable properties
+  
