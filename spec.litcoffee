@@ -33,9 +33,25 @@
                     gf.should.have.property('default_method').and.equal(fn)
                     gf.should.have.property('argn').and.equal(argn)
 
+
+
+
+
+
+
         describe "does argument validation", ->
-            it "requires a string first"
+
+            it "requires a string first", ->
+                for fn in [
+                    -> simplegeneric()
+                    -> simplegeneric(null)
+                    -> simplegeneric(123)
+                    -> simplegeneric(->)
+                ]
+                    fn.should.throw TypeError, /unique key string required/
+
             it "requires a non-negative, numeric argument position"
+
             it "only accepts an optional number and optional function"
 
 
@@ -228,8 +244,6 @@
                 checkByBase fn = simplegeneric(KEY, example.default_method)
                 checkByObject fn
 
-            it "doesn't share mathods from gfs with different keys"
-
             it "dispatches based on its argument position", ->
                 for argn in [0..9]
                     gf = simplegeneric(KEY, argn, example.default_method)
@@ -238,6 +252,49 @@
                         args[argn] = arg
                         gf(args...)
                     checkByObject fn
+
+
+
+
+
+
+
+
+            it "doesn't share mathods from gfs with different keys", ->
+                g1 = simplegeneric KEY+"1"
+                g1.when_type Number, g1num = spy.named "g1.Number"
+                g1.when_object ob2, g1ob2 = spy.named "g1.ob2"
+
+                g2 = simplegeneric KEY+"2"
+                g2.when_type Number, g2num = spy.named "g2.Number"
+                g2.when_object ob2, g2ob2 = spy.named "g2.ob2"
+
+                g1(1,"g1")
+                g1num.should.have.been.calledWithExactly(1, "g1")
+                g2num.should.not.have.been.called
+
+                g2(1,"g2")
+                g1num.should.have.been.calledOnce
+                g2num.should.have.been.calledWithExactly(1, "g2")
+
+                g1(ob2, "g1")
+                g1ob2.should.have.been.calledWithExactly(ob2, "g1")
+                g2ob2.should.not.have.been.called
+
+                g2(ob2, "g2")                
+                g1ob2.should.have.been.calledOnce
+                g2ob2.should.have.been.calledWithExactly(ob2, "g2")
+
+                g1num.should.have.been.calledOnce
+                g2num.should.have.been.calledOnce
+                
+
+
+
+
+
+
+
 
 
 
@@ -269,7 +326,7 @@
     spy.named = (name, args...) ->
         s = if this is spy then spy(args...) else this
         s.displayName = name
-        s
+        return s
 
 
 

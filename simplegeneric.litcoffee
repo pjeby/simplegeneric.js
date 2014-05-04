@@ -8,12 +8,9 @@
         else
             ob[key] = value
 
-    defProps = (ob, props, opts={}) ->
-        for own key, value of props
-            defProp ob, key, value, opts
-        return ob
-
     simplegeneric = (key, argn=0, default_method=fail) ->
+        unless typeof key is "string"
+            throw new TypeError "unique key string required" 
         if typeof argn is "function"
             default_method = argn
             argn = 0
@@ -41,6 +38,11 @@
 
     class simplegeneric.NoSuchMethod extends Error
         constructor: -> Error.apply(this, arguments)
+
+    defProps = (ob, props, opts={}) ->
+        for own key, value of props
+            defProp ob, key, value, opts
+        return ob
 
     module.exports = simplegeneric
     
