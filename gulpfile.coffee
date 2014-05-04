@@ -15,7 +15,7 @@ gulp.task 'test', ['build'], ->
     gulp.src 'spec.litcoffee'
     .pipe mocha
         reporter: "spec"
-        #compilers: "litcoffee:coffee-script/register"
+        #bail: yes
     .on "error", (err) ->
         console.log err.toString()
         console.log err.stack if err.stack?

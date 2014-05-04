@@ -1,9 +1,10 @@
     simplegeneric = require 'simplegeneric'
-    should = require 'should'
+    should = require('chai').should()
+
     describe "The simplegeneric() API", ->
 
         it "is a function", ->
-            simplegeneric.should.be.Function
+            simplegeneric.should.be.a('function')
 
         it "provides a NoSuchMethod error", ->
             simplegeneric.should.have.property('NoSuchMethod')
@@ -11,18 +12,18 @@
 
         it "accepts a unique ID for its key, returning a function", ->
             for key in ["some.unique.id", "another.key"]
-                simplegeneric(key).should.be.Function
+                simplegeneric(key).should.be.a('function')
                 .and.have.property('key').and.equal(key)
 
         it "accepts an argument position (default of 0)", ->
             for argn in [null, 0, 1, 2, 3]
-                simplegeneric("my.unique.id", argn).should.be.Function
+                simplegeneric("my.unique.id", argn).should.be.a('function')
                 .and.have.property('argn').and.equal(argn ? 0)
 
         it "accepts a default implementation (defaulting argn to 0)", ->
             for fn in [(->42), (->77)]
                 gf = simplegeneric("some.id", fn)
-                gf.should.be.Function
+                gf.should.be.a('function')
                 .and.have.property('default_method').and.equal(fn)
                 gf.should.have.property('argn').and.equal(0)
 
@@ -38,7 +39,6 @@
             it "requires a non-negative, numeric argument position"
             it "only accepts an optional number and optional function"
 
-
     describe "A generic function", ->
 
         KEY = "simplegeneric.spec.example"
@@ -53,26 +53,26 @@
 
         checkByBase = (fn, match=(f)->f()) ->
             for tgt in [new Base, new Subclass]
-                should(fn(tgt)).equal match base_method
+                should.equal fn(tgt), match base_method
             for tgt in [String, RegExp]
-                should(fn(tgt)).equal match default_method
+                should.equal fn(tgt), match default_method
             for tgt in ["x", /x/]
-                should(fn(tgt)).equal match stringy_method
+                should.equal fn(tgt), match stringy_method
 
         checkByType = (fn, match=(f)->f()) ->
             for tgt in [Base, Subclass]
-                should(fn(tgt)).equal match base_method
+                should.equal fn(tgt), match base_method
             for tgt in [String, RegExp]
-                should(fn(tgt)).equal match stringy_method
+                should.equal fn(tgt), match stringy_method
             for tgt in ["x", /x/, new Base, new Subclass, ob1, ob2]
-                should(fn(tgt)).equal match default_method
+                should.equal fn(tgt), match default_method
 
         checkByObject = (fn, match=(f)->f()) ->
             fn(ob1).should.equal match ob1_method
             for tgt in [ob2, 42]
-                should(fn(tgt)).equal match default_method
+                should.equal fn(tgt), match default_method
             for tgt in [String::, RegExp::]
-                should(fn(tgt)).equal match stringy_method
+                should.equal fn(tgt), match stringy_method
 
 
 
@@ -124,12 +124,12 @@
         describe "accepts type registrations via .when_type()", ->
 
             it "has a .when_type() method", ->
-                example.should.have.property('when_type').and.be.Function
+                example.should.have.property('when_type').and.be.a('function')
 
             it "requires at least two arguments", ->
                 for args in [ [], [Number] ]
                     (-> example.when_type.apply(example, args))
-                        .should.throw(TypeError).and.throw /two arguments/
+                        .should.throw TypeError, /two arguments/
 
                 (-> example.when_type(String, RegExp, stringy_method))
                     .should.not.throw()
@@ -139,45 +139,45 @@
             it "requires a function as the last argument", ->
                 for args in [ [ob1, ob2], [String, Number, ob2] ]
                     (-> example.when_type.apply(example, args))
-                        .should.throw(TypeError)
-                        .and.throw /last argument must be function/i
+                        .should.throw TypeError,
+                            /last argument must be function/i
 
 
         describe "accepts object registrations via .when_object()", ->
 
             it "has a .when_object() method", ->
-                example.should.have.property('when_object').and.be.Function
+                example.should.have.property('when_object').and.be.a('function')
 
             it "requires at least two arguments", ->
                 for args in [ [], [Number::] ]
                     (-> example.when_object.apply(example, args))
-                        .should.throw(TypeError).and.throw /two arguments/
+                        .should.throw TypeError, /two arguments/
                 (-> example.when_object(ob1, ob1_method))
                     .should.not.throw()
 
             it "requires a function as the last argument", ->
                 for args in [ [ob1, ob2], [String::, Number::, ob2] ]
                     (-> example.when_object.apply(example, args))
-                        .should.throw(TypeError)
-                        .and.throw /last argument must be function/i
+                        .should.throw TypeError,
+                            /last argument must be function/i
 
 
         describe "can tell you whether registrations exist", ->
 
             it "via .method_for(ob, exact=no)", ->
-                example.should.have.property('method_for').and.be.Function
+                example.should.have.property('method_for').and.be.a('function')
                 for check in [checkByBase, checkByObject]
                     check(
                         (ob) -> example.method_for(ob) ? default_method
                         (f)  -> f
                     )
                 for ob in [String::, RegExp::, Base::, Subclass::, ob1, "str"]
-                    should( example.method_for(ob) ).not.equal undefined
+                    should.exist example.method_for(ob)
                 for ob in [String, RegExp, Base, ob2, 42]
-                    should( example.method_for(ob) ).equal undefined
+                    should.not.exist example.method_for(ob)
 
             it "via .method_for_type(ob, exact=no)", ->
-                example.should.have.property('method_for_type').and.be.Function
+                example.should.have.property('method_for_type').and.be.a('function')
                 checkByBase(
                     (ob) -> example.method_for_type(ob.constructor) ? default_method
                     (f)  -> f
@@ -189,15 +189,15 @@
 
             it "via .method_for(ob, exact=yes)", ->
                 for ob in [String::, RegExp::, Base::, ob1]
-                    should( example.method_for(ob, yes) ).not.equal undefined
+                    should.exist example.method_for(ob, yes)
                 for ob in [String, RegExp, Base, Subclass::, ob2, 42, "str"]
-                    should( example.method_for(ob, yes) ).equal undefined
+                    should.not.exist example.method_for(ob, yes)
 
             it "via .method_for_type(ob, exact=yes)", ->
                 for ob in [String, RegExp, Base]
-                    should( example.method_for_type(ob, yes) ).not.equal undefined
+                    should.exist example.method_for_type(ob, yes)
                 for ob in [Subclass, String::, RegExp::, Base::, ob1, "str"]
-                    should( example.method_for_type(ob, yes) ).equal undefined
+                    should.not.exist example.method_for_type(ob, yes)
 
 
 
@@ -247,8 +247,8 @@
         describe "manages properties sensibly", ->
 
             it "doesn't expose its private properties", ->
-                ob1.should.have.keys []
-                ob1.should.not.have.enumerable(KEY)
+                ob1.should.be.empty
+                ob1.should.not.include.keys(KEY)
     
             it "doesn't allow changing its informational properties", ->
                 example.argn = 9
