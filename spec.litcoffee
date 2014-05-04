@@ -173,9 +173,19 @@
                         gf(args...)
                     checkByObject fn
 
+        describe "manages properties sensibly", ->
 
-        it "doesn't expose its private properties"
-        it "doesn't allow changing its informational properties"
+            it "doesn't expose its private properties", ->
+                Object.keys(ob1).should.eql []
+    
+            it "doesn't allow changing its informational properties", ->
+                example.argn = 9
+                example.argn.should.equal(0)
+                example.key = "what"
+                example.key.should.equal(KEY)
+                old = example.default_method
+                example.default_method = /99/
+                example.default_method.should.equal(old)
 
 
 
