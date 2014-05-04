@@ -1,5 +1,4 @@
     simplegeneric = require 'simplegeneric'
-    should = require('chai').should()
 
     describe "The simplegeneric() API", ->
 
@@ -38,6 +37,7 @@
             it "requires a string first"
             it "requires a non-negative, numeric argument position"
             it "only accepts an optional number and optional function"
+
 
     describe "A generic function", ->
 
@@ -81,9 +81,9 @@
 
 
         it "calls its default method by default", ->
-            for fn in [(->42), (->77)]
-                gf = simplegeneric("some.id", fn)
-                gf().should.equal fn()
+            for fn in [spy.named("42", ->42), spy.named("77", ->77)]
+                simplegeneric("some.id", fn)()
+                fn.should.be.calledOnce
 
         it "throws NoSuchMethod without a default method", ->
             simplegeneric("no.such").should.throw simplegeneric.NoSuchMethod
@@ -212,12 +212,17 @@
                 checkByObject example
 
             it "passes through its arguments and context", ->
-                thing = gf: simplegeneric "context.check", ->
-                    [this, [].slice.call(arguments)]
-                thing.gf(1, 2, 3).should.eql([thing, [1,2,3]])
-                thing.gf.when_object thing, ->
-                    [].slice.call(arguments).concat this
-                thing.gf(thing, 4, 5).should.eql([thing,4,5,thing])
+                thing = gf: simplegeneric "context.check", dm = spy.named "dm"
+                thing.gf.when_object thing, om = spy.named "om"
+                thing.gf(1, 2, 3)
+                thing.gf(thing, 4, 5)
+
+                dm.should.be.calledOnce
+                dm.should.be.calledOn(thing).calledWithExactly(1,2,3)
+                dm.should.be.calledBefore(om)
+                om.should.be.calledOnce
+                om.should.be.calledAfter(dm)
+                om.should.be.calledOn(thing).calledWithExactly(thing, 4, 5)
                 
             it "shares methods from gfs with the same key", ->
                 checkByBase fn = simplegeneric(KEY, example.default_method)
@@ -233,11 +238,6 @@
                         args[argn] = arg
                         gf(args...)
                     checkByObject fn
-
-
-
-
-
 
 
 
@@ -260,16 +260,16 @@
                 example.default_method.should.equal(old)
 
 
+    chai = require 'chai'
+    chai.use require 'sinon-chai'
+    should = chai.should()
 
+    {spy} = sinon = require 'sinon'
 
-
-
-
-
-
-
-
-
+    spy.named = (name, args...) ->
+        s = if this is spy then spy(args...) else this
+        s.displayName = name
+        s
 
 
 
