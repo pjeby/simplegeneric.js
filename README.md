@@ -104,21 +104,25 @@ This should usually not be an issue for methods registered with ``.when_type()``
 
 (Using ``.when_object()`` on objects used only as prototypes should be safe, however, and all of these issues are moot if you are only targeting ES5 environments like Node, most non-IE browsers, and IE 9+.)
 
-## Todo/Open Issues
+## To Do
 
-* What does it really mean to be a "type" vs. prototype?
-    * e.g. should objects that are already prototypes be accepted?
-    * for ``method_for_type()`` as well as ``when_type()``? 
-* Redo docs to be less confrontational
+Code:
 * Refactor/document inspection methods
     * ``method_for(ob, exact=no)``
     * ``method_for_type(type, exact=no)``
-* Should repeat registrations be an error?
 * Implement functionality of remaining tests:
     * key validation
     * extra args validation
-    * argument+this passthrough
-    * argn > 0
-    * non-enumerable props
-* Make key/argn/default_method non-writable, non-configurable properties
+
+Docs:
+* Redo docs to be more direct, less Q&A
+* Add examples
+* Add inline documentation for code & tests
+
+Open Questions:
+* Should repeat registrations be an error?
+* What does it really mean to be a "type" vs. prototype?
+    * e.g. should objects that are already prototypes be accepted?
+    * for ``method_for_type()`` as well as ``when_type()``? 
+
   
