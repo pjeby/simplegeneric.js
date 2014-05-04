@@ -19,7 +19,8 @@ gulp.task 'test', ['build'], ->
         #compilers: "litcoffee:coffee-script/register"
         #require: "should"
     .on "error", (err) ->
-        console.log err
+        console.log err.toString()
+        console.log err.stack if err.stack?
         @emit 'end'
 
 gulp.task 'default', ['test'], ->
