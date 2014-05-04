@@ -8,7 +8,7 @@
 
         it "provides a NoSuchMethod error", ->
             simplegeneric.should.have.property('NoSuchMethod')
-            .and.have.property('prototype').and.be.Error
+            .and.have.property('prototype').and.be.instanceOf(Error)
 
         it "accepts a unique ID for its key, returning a function", ->
             for key in ["some.unique.id", "another.key"]
