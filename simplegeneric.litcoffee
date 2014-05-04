@@ -32,12 +32,12 @@
                 for t,p in [].slice.call(arguments, 0, arguments.length-1)
                     arguments[p] = t::
                 fn.when_object(arguments...)
-            has_object: (o) -> o[key]?
-            has_exact: (o) -> Object.hasOwnProperty.call(o,key)
-            has_type: (o) -> o?.prototype?[key]?
+            method_for: (o, exact=no) ->
+                if not exact or o? and Object.hasOwnProperty.call(o,key)
+                    return o?[key]
+            method_for_type: (o, exact=no) -> @method_for o?.prototype, exact
         }
         return fn
-
 
     class simplegeneric.NoSuchMethod extends Error
         constructor: -> Error.apply(this, arguments)

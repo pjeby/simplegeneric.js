@@ -107,17 +107,17 @@ This should usually not be an issue for methods registered with ``.when_type()``
 ## To Do
 
 Code:
-* Refactor/document inspection methods
-    * ``method_for(ob, exact=no)``
-    * ``method_for_type(type, exact=no)``
 * Implement functionality of remaining tests:
     * key validation
     * extra args validation
 
 Docs:
 * Redo docs to be more direct, less Q&A
-* Add examples
 * Add inline documentation for code & tests
+* Add examples
+* Document inspection methods
+    * ``method_for(ob, exact=no)``
+    * ``method_for_type(type, exact=no)``
 
 Open Questions:
 * Should repeat registrations be an error?

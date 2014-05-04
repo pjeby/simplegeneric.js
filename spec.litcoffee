@@ -1,5 +1,5 @@
     simplegeneric = require 'simplegeneric'
-
+    should = require 'should'
     describe "The simplegeneric() API", ->
 
         it "is a function", ->
@@ -42,11 +42,43 @@
     describe "A generic function", ->
 
         KEY = "simplegeneric.spec.example"
-        example = simplegeneric(KEY, -> no)
+        example = simplegeneric(KEY, default_method = -> no)
+        base_method = -> "base"
+        stringy_method = -> true
+        ob1_method = -> "ob1"
         ob1 = {}
         ob2 = {}
         class Base then ;
         class Subclass extends Base then ;
+
+        checkByBase = (fn, match=(f)->f()) ->
+            for tgt in [new Base, new Subclass]
+                should(fn(tgt)).equal match base_method
+            for tgt in [String, RegExp]
+                should(fn(tgt)).equal match default_method
+            for tgt in ["x", /x/]
+                should(fn(tgt)).equal match stringy_method
+
+        checkByType = (fn, match=(f)->f()) ->
+            for tgt in [Base, Subclass]
+                should(fn(tgt)).equal match base_method
+            for tgt in [String, RegExp]
+                should(fn(tgt)).equal match stringy_method
+            for tgt in ["x", /x/, new Base, new Subclass, ob1, ob2]
+                should(fn(tgt)).equal match default_method
+
+        checkByObject = (fn, match=(f)->f()) ->
+            fn(ob1).should.equal match ob1_method
+            for tgt in [ob2, 42]
+                should(fn(tgt)).equal match default_method
+            for tgt in [String::, RegExp::]
+                should(fn(tgt)).equal match stringy_method
+
+
+
+
+
+
 
         it "calls its default method by default", ->
             for fn in [(->42), (->77)]
@@ -55,6 +87,39 @@
 
         it "throws NoSuchMethod without a default method", ->
             simplegeneric("no.such").should.throw simplegeneric.NoSuchMethod
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         describe "accepts type registrations via .when_type()", ->
 
@@ -66,9 +131,9 @@
                     (-> example.when_type.apply(example, args))
                         .should.throw(TypeError).and.throw /two arguments/
 
-                (-> example.when_type(String, RegExp, -> true))
+                (-> example.when_type(String, RegExp, stringy_method))
                     .should.not.throw()
-                (-> example.when_type(Base, -> "base"))
+                (-> example.when_type(Base, base_method))
                     .should.not.throw()
 
             it "requires a function as the last argument", ->
@@ -76,8 +141,6 @@
                     (-> example.when_type.apply(example, args))
                         .should.throw(TypeError)
                         .and.throw /last argument must be function/i
-
-
 
 
         describe "accepts object registrations via .when_object()", ->
@@ -89,7 +152,7 @@
                 for args in [ [], [Number::] ]
                     (-> example.when_object.apply(example, args))
                         .should.throw(TypeError).and.throw /two arguments/
-                (-> example.when_object(ob1, -> "ob1"))
+                (-> example.when_object(ob1, ob1_method))
                     .should.not.throw()
 
             it "requires a function as the last argument", ->
@@ -98,44 +161,50 @@
                         .should.throw(TypeError)
                         .and.throw /last argument must be function/i
 
+
         describe "can tell you whether registrations exist", ->
 
-            it "via .has_type()", ->
-                example.should.have.property('has_type').and.be.Function
-                for ob in [String, RegExp, Base]
-                    example.has_type(ob).should.be.true
-                for ob in [String::, RegExp::, Base::, ob1, "a string"]
-                    example.has_type(ob).should.be.false
-
-            it "via .has_object()", ->
-                example.should.have.property('has_object').and.be.Function
-                for ob in [String::, RegExp::, Base::, Subclass::, ob1, "a string"]
-                    example.has_object(ob).should.be.true
+            it "via .method_for(ob, exact=no)", ->
+                example.should.have.property('method_for').and.be.Function
+                for check in [checkByBase, checkByObject]
+                    check(
+                        (ob) -> example.method_for(ob) ? default_method
+                        (f)  -> f
+                    )
+                for ob in [String::, RegExp::, Base::, Subclass::, ob1, "str"]
+                    should( example.method_for(ob) ).not.equal undefined
                 for ob in [String, RegExp, Base, ob2, 42]
-                    example.has_object(ob).should.be.false
+                    should( example.method_for(ob) ).equal undefined
 
-            it "via .has_exact()", ->
-                example.should.have.property('has_exact').and.be.Function
+            it "via .method_for_type(ob, exact=no)", ->
+                example.should.have.property('method_for_type').and.be.Function
+                checkByBase(
+                    (ob) -> example.method_for_type(ob.constructor) ? default_method
+                    (f)  -> f
+                )
+                checkByType(
+                    (ob) -> example.method_for_type(ob) ? default_method
+                    (f)  -> f
+                )
+
+            it "via .method_for(ob, exact=yes)", ->
                 for ob in [String::, RegExp::, Base::, ob1]
-                    example.has_exact(ob).should.be.true
-                for ob in [String, RegExp, Base, Subclass::, ob2, 42, "a string"]
-                    example.has_exact(ob).should.be.false
+                    should( example.method_for(ob, yes) ).not.equal undefined
+                for ob in [String, RegExp, Base, Subclass::, ob2, 42, "str"]
+                    should( example.method_for(ob, yes) ).equal undefined
+
+            it "via .method_for_type(ob, exact=yes)", ->
+                for ob in [String, RegExp, Base]
+                    should( example.method_for_type(ob, yes) ).not.equal undefined
+                for ob in [Subclass, String::, RegExp::, Base::, ob1, "str"]
+                    should( example.method_for_type(ob, yes) ).equal undefined
+
+
+
+
 
         describe "invokes methods appropriately", ->
 
-            checkByBase = (fn) ->
-                fn(new Base).should.equal "base"
-                fn(new Subclass).should.equal "base"
-                fn(String).should.be.false
-                fn(RegExp).should.be.false
-                fn("x").should.be.true
-                fn(/x/).should.be.true
-
-            checkByObject = (fn) ->
-                fn(ob1).should.equal "ob1"
-                fn(ob2).should.be.false
-                fn(42).should.be.false
-                
             it "dispatches correctly by type", ->
                 checkByBase example
 
@@ -154,14 +223,6 @@
                 checkByBase fn = simplegeneric(KEY, example.default_method)
                 checkByObject fn
 
-
-
-
-
-
-
-
-
             it "doesn't share mathods from gfs with different keys"
 
             it "dispatches based on its argument position", ->
@@ -173,10 +234,21 @@
                         gf(args...)
                     checkByObject fn
 
+
+
+
+
+
+
+
+
+
+
         describe "manages properties sensibly", ->
 
             it "doesn't expose its private properties", ->
-                Object.keys(ob1).should.eql []
+                ob1.should.have.keys []
+                ob1.should.not.have.enumerable(KEY)
     
             it "doesn't allow changing its informational properties", ->
                 example.argn = 9
