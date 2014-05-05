@@ -43,12 +43,13 @@
         constructor: -> Error.apply(this, arguments)
 
     defProp = (ob, key, value, opts) ->
-        if Object.defineProperty?
+        try
             opts ?= Object.create(null)
             opts.value = value
             Object.defineProperty ob, key, opts
-        else
+        catch
             ob[key] = value
+        return ob
 
     defProps = (ob, props, opts={}) ->
         for own key, value of props
@@ -57,20 +58,6 @@
 
     module.exports = simplegeneric
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
