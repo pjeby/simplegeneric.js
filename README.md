@@ -106,11 +106,6 @@ This should usually not be an issue for methods registered with ``.when_type()``
 
 ## To Do
 
-Code:
-* Implement functionality of remaining tests:
-    * key validation
-    * extra args validation
-
 Docs:
 * Redo docs to be more direct, less Q&A
 * Add inline documentation for code & tests
@@ -124,5 +119,5 @@ Open Questions:
 * What does it really mean to be a "type" vs. prototype?
     * e.g. should objects that are already prototypes be accepted?
     * for ``method_for_type()`` as well as ``when_type()``? 
+* Is some sort of ``super`` or ``next_method()`` API needed?
 
-  

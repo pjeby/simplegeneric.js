@@ -1,4 +1,4 @@
-    simplegeneric = require 'simplegeneric'
+    simplegeneric = require './'
 
     describe "The simplegeneric() API", ->
 
@@ -50,9 +50,34 @@
                 ]
                     fn.should.throw TypeError, /unique key string required/
 
-            it "requires a non-negative, numeric argument position"
+            it "requires a non-negative, numeric argument position", ->
+                for fn in [
+                    -> simplegeneric("x", -1)
+                    -> simplegeneric("y", -23)
+                    -> simplegeneric("z", "q")
+                    -> simplegeneric("m", (->), (->))
+                ]
+                    fn.should.throw TypeError, /argument number must be/
 
-            it "only accepts an optional number and optional function"
+            it "only accepts a number and/or function", ->
+                for fn in [
+                    -> simplegeneric("n", 1, 2)
+                    -> simplegeneric("n", 1, (->), (->))
+                ]
+                    fn.should.throw TypeError  #, //
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     describe "A generic function", ->

@@ -1,19 +1,20 @@
-    fail = -> throw new simplegeneric.NoSuchMethod()
-
-    defProp = (ob, key, value, opts) ->
-        if Object.defineProperty?
-            opts ?= Object.create(null)
-            opts.value = value
-            Object.defineProperty ob, key, opts
-        else
-            ob[key] = value
-
     simplegeneric = (key, argn=0, default_method=fail) ->
         unless typeof key is "string"
             throw new TypeError "unique key string required" 
-        if typeof argn is "function"
+
+        if typeof argn is "function" and arguments.length<3
             default_method = argn
             argn = 0
+
+        unless typeof argn is "number" and argn>=0        
+            throw new TypeError "argument number must be >=0"
+
+        unless typeof default_method is "function"
+            throw new TypeError "default method must be function"
+
+        unless arguments.length<= 3
+            throw new TypeError "excess arguments"
+        
         fn = -> (arguments[argn]?[key] ? default_method).apply(this, arguments)
         return defProps fn, {
             argn, key, default_method,
@@ -36,8 +37,18 @@
         }
         return fn
 
+    fail = -> throw new simplegeneric.NoSuchMethod()
+
     class simplegeneric.NoSuchMethod extends Error
         constructor: -> Error.apply(this, arguments)
+
+    defProp = (ob, key, value, opts) ->
+        if Object.defineProperty?
+            opts ?= Object.create(null)
+            opts.value = value
+            Object.defineProperty ob, key, opts
+        else
+            ob[key] = value
 
     defProps = (ob, props, opts={}) ->
         for own key, value of props
