@@ -5,7 +5,7 @@ This library provides a simple way to create single-dispatch generic functions i
 
 ## Usage
 
-Basic usage:
+Create a generic function:
 
 ```javascript
 var simplegeneric = require('simplegeneric');
@@ -14,17 +14,21 @@ var pprint = simplegeneric(
     // required first argument: globally unique name
     'com.myorg.myapp:pprint',
 
-    // optional: argument number to dispatch on (default = 0: first argument)
+    // optional: argument number to dispatch on
+    // (default = 0: first argument)
     0,
 
-    // optional: default behavior (if omitted, default throws NoSuchMethod)                          
+    // optional: default behavior
+    // (if omitted, default throws simplegeneric.NoSuchMethod)                          
     function(ob, someArg, anotherArg){
         return ob.toString(); // code to handle default pprint operation
     }
 )
+```
 
-// Register implementations for various types
+Register implementations for various types:
  
+```javascript
 pprint.when_type(Number, function(ob, someArg, anotherArg) { 
     // code for pprinting a Number
 })
@@ -32,16 +36,19 @@ pprint.when_type(Number, function(ob, someArg, anotherArg) {
 pprint.when_type(MyClass, function(ob, someArg, anotherArg) { 
     // code for pprinting a MyClass instance
 })
+```
 
-// Call the generic function
+Call the generic function:
 
+```javascript
 pprint(43, someval, anotherval)           // calls code for pprinting a number
 pprint(new MyClass(whatever), foo, bar)   // calls code for pprinting MyClass
 pprint("whatever", baz, spam)             // calls default code
+```
 
+Register an implementation for one specific instance:
 
-// Register an implementation for one specific instance
-
+```javascript
 pprint.when_object(someInstance, function(ob, someArg, anotherArg) { 
     // code for pprinting someInstance
     // (or anything that uses someInstance as its prototype)
@@ -52,7 +59,27 @@ pprint(Object.create(someInstance), "blah", eggs)   // also calls it
 pprint(Object.create(null), fidget, widget)         // calls default code
 ```
 
-<!--For more, see the [docs]().-->
+You can also ask a generic function for the method that would be used for objects of a particular type or instance, using the ``method_for(ob, exact=no)`` and ``method_for_type(ob, exact=no)`` methods, which return the registered function, if any, or an undefined value otherwise:
+
+```javascript
+pprint.method_for(23)               // returns number code
+pprint.method_for_type(Number)      // likewise
+
+pprint.method_for("x")              // undefined
+pprint.method_for_type(String)      // undefined
+
+pprint.method_for(someInstance)                 // someInstance code
+pprint.method_for(Object.create(someInstance))  // someInstance code
+```
+
+Passing in an ``exact`` flag of ``true`` only returns a method if one was registered for the object or type passed in, ignoring ones registered for their base classes or prototypes:  
+
+```javascript
+pprint.method_for_type(Number, true)                  // number code
+pprint.method_for(someInstance, true)                 // someInstance code
+pprint.method_for(Object.create(someInstance), true)  // undefined!
+```
+
 
 
 ## FAQ
@@ -102,20 +129,15 @@ On non-ES5 platforms (e.g. IE 8 and lower), however, registered methods will be 
 
 This should usually not be an issue for methods registered with ``.when_type()``, since most code that enumerates object contents expects to use ``.hasOwnProperty()`` to filter out inherited methods.  But ``.when_object()`` will register methods directly on an instance, which can't be filtered out unless the properties are defined non-enumerable.
 
-(Using ``.when_object()`` on objects used only as prototypes should be safe, however, and all of these issues are moot if you are only targeting ES5 environments like Node, most non-IE browsers, and IE 9+.)
+Using ``.when_object()`` on objects used only as prototypes should be safe, however, and all of these issues are moot if you are only targeting ES5 environments like Node, most non-IE browsers, and IE 9+.
 
 ## To Do
 
 Docs:
-* Redo docs to be more direct, less Q&A
 * Add inline documentation for code & tests
-* Add examples
-* Document inspection methods
-    * ``method_for(ob, exact=no)``
-    * ``method_for_type(type, exact=no)``
+* Add more examples
 
 Open Questions:
-* Should repeat registrations be an error?
 * What does it really mean to be a "type" vs. prototype?
     * e.g. should objects that are already prototypes be accepted?
     * for ``method_for_type()`` as well as ``when_type()``? 
