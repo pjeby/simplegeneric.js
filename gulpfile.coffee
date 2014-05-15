@@ -4,15 +4,18 @@ coffee = require 'gulp-coffee'
 
 require 'coffee-script/register'
 
+package_name = JSON.parse(require('fs').readFileSync "package.json").name
+main = "#{package_name}.litcoffee"
+
 gulp.task 'build', ->
-    gulp.src("simplegeneric.litcoffee")
+    gulp.src(main)
     .pipe coffee()
     #.on 'error', ->gutil.log
     .pipe gulp.dest('.')
     #.pipe filelog()
 
 gulp.task 'test', ['build'], ->
-    gulp.src 'spec.litcoffee'
+    gulp.src 'spec.*coffee'
     .pipe mocha
         reporter: "spec"
         #bail: yes
@@ -22,4 +25,4 @@ gulp.task 'test', ['build'], ->
         @emit 'end'
 
 gulp.task 'default', ['test'], ->
-    gulp.watch ['*.litcoffee'], ['test']
+    gulp.watch [main, 'spec.*coffee'], ['test']
