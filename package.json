@@ -1,6 +1,6 @@
 {
   "name": "simplegeneric",
-  "version": "0.0.0",
+  "version": "0.8.0",
   "description": "Single-dispatch generic functions, ala Python's simplegeneric and functools.singledispatch",
   "repository":"git@github.com:pjeby/simplegeneric.js.git",
   "homepage": "https://github.com/pjeby/simplegeneric.js",

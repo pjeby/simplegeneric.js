@@ -1,4 +1,4 @@
-# Single-Dispatch Generic Functions For JavaScript
+# Single-Dispatch Generic Functions
 
 This library provides a simple way to create single-dispatch generic functions in JavaScript, similar to Python's [simplegeneric](https://pypi.python.org/pypi/simplegeneric) and [functools.singledispatch](http://legacy.python.org/dev/peps/pep-0443/), but with a few JavaScript-specific twists.
 
@@ -88,14 +88,14 @@ pprint.method_for(Object.create(someInstance), true)  // undefined!
 
 A generic function is an *extensible* function.  It replaces code that would otherwise be written as a large ``switch`` or series of ``if()`` statements, or as a bunch of methods spread out over a wide variety of classes (or prototypes in the case of JavaScript), and makes it possible for any module to define operations for certain types, without needing to modify the code of either the types or the original operation.
 
-Instead, new types can register methods for existing operations, new operations can register methods for existing types, and application code can register methods to add support for the third-party types it uses, to a third-party operation it uses.
+Instead, new types can register methods for existing operations, new operations can register methods for existing types, and application code can register methods to add support for the third-party types it uses, to the fourth-party operations it uses.
 
 This lets you follow the [open/closed principle](http://en.wikipedia.org/wiki/Open/closed_principle) of software development: code should be open to extension, while being closed to modification.  A generic function can be extended at any time to add new types, without needing to modify its code.  And any type can be extended to support new generic functions, without needing to modify *its* code, either.  
 
 
 ### What good is that?
 
-A generic function lets you organize your library or application code in terms of *operations*, instead of the objects being operated on.  If many different types might be involved, then the code for a specific operation might be spread out all over the place.  Sometimes, it's better to group the operations together for clarity, or because the operation is part of a different library than the tpes it operates on. 
+A generic function lets you organize your library or application code in terms of *operations*, instead of the objects being operated on.  If many different types might be involved, then the code for a specific operation might be spread out all over the place.  Sometimes, it's better to group the operations together for clarity, or because the operation is part of a different library than the types it operates on. 
 
 Generic functions are especially useful when a library wants to offer a generally-useful operation for certain existing types, but it's not clear yet what it should do for new or third-party types.  For example, ``JSON.stringify()`` is a generic function, whose behavior can be extended by adding a ``toJSON()`` method to a new type.
 
@@ -121,7 +121,7 @@ People writing libraries that want to support interop like this, should document
 
 (In a pinch, you can also get the name from the ``.key`` property of the generic function, but if the author didn't document it, they may not intend for you to depend on it.  Check with them to be sure it'll stay supported!) 
  
-## Compatibility <a name="compatibility"></a>
+## Compatibility
 
 Functions created with this library should work correctly in any browser or JS engine, even back to IE 6.
 
@@ -130,16 +130,3 @@ On non-ES5 platforms (e.g. IE 8 and lower), however, registered methods will be 
 This should usually not be an issue for methods registered with ``.when_type()``, since most code that enumerates object contents expects to use ``.hasOwnProperty()`` to filter out inherited methods.  But ``.when_object()`` will register methods directly on an instance, which can't be filtered out unless the properties are defined non-enumerable.
 
 Using ``.when_object()`` on objects used only as prototypes should be safe, however, and all of these issues are moot if you are only targeting ES5 environments like Node, most non-IE browsers, and IE 9+.
-
-## To Do
-
-Docs:
-* Add inline documentation for code & tests
-* Add more examples
-
-Open Questions:
-* What does it really mean to be a "type" vs. prototype?
-    * e.g. should objects that are already prototypes be accepted?
-    * for ``method_for_type()`` as well as ``when_type()``? 
-* Is some sort of ``super`` or ``next_method()`` API needed?
-
