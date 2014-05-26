@@ -1,4 +1,4 @@
-# Single-Dispatch Generic Functions For JavaScript
+# Single-Dispatch Generic Functions
 
 The ``simplegeneric()`` function creates an extensible or "generic" function,
 that can have different behavior for different kinds of objects, and can have
