@@ -2,7 +2,7 @@
   "name": "simplegeneric",
   "version": "0.8.0",
   "description": "Single-dispatch generic functions, ala Python's simplegeneric and functools.singledispatch",
-  "repository":"git@github.com:pjeby/simplegeneric.js.git",
+  "repository": "git@github.com:pjeby/simplegeneric.js.git",
   "homepage": "https://github.com/pjeby/simplegeneric.js",
   "main": "simplegeneric.js",
   "scripts": {
@@ -20,7 +20,7 @@
     "coffee-script": "^1.7.1",
     "gulp-mocha": "^0.4.1",
     "gulp-coffee": "^1.4.2",
-    "gulp": "^3.6.2",
+    "gulp": "^3.8.0",
     "chai": "^1.9.1",
     "sinon-chai": "^2.5.0",
     "sinon": "^1.9.1"
